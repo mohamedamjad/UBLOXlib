@@ -6,7 +6,7 @@
 
 class UBLOX{
   private:
-    std::ifstream file;
+    std::ifstream file; //istream plutot pointeur
     std::vector<ubx_message> *ubxs;
   public:
     UBLOX(std::string);
