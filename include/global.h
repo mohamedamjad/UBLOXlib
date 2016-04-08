@@ -1,6 +1,11 @@
-#include<stdlib.h>
+#include <stdlib.h>
 #include <stdio.h>
-
+#include <math.h>
+// Constantes geodesiques
+#define a_WGS84 (6377397.00)
+#define b_WGS84 (6356752.30)
+#define f_WGS84 (0.00335281066)
+#define PI (3.141592653589793)
 
 // Message class
 #define RXM 0x02
@@ -24,7 +29,7 @@ typedef struct{
     unsigned char message_class;
     unsigned char message_id;
     unsigned char message_length[2];
-    unsigned char payload[100]; // taille maxi
+    unsigned char payload[7000]; // taille maxi
     unsigned char checksum_A;
     unsigned char checksum_B;
 }ubx_message, *pubx_message;
