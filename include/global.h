@@ -2,9 +2,9 @@
 #include <stdio.h>
 #include <math.h>
 // Constantes geodesiques
-#define a_WGS84 (6377397.00)
+#define a_WGS84 (6378137.00)
 #define b_WGS84 (6356752.30)
-#define f_WGS84 (0.00335281066)
+#define f_WGS84 (1.0/298.257223563)
 #define PI (3.141592653589793)
 
 // Message class
