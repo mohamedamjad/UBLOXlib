@@ -1,7 +1,6 @@
 #include"global.h"
-
+#include"gnuplot_i.h"
 int main(int argc, char *argv[]){
-  
   FILE *ubx_file;
   int length=0;
   ubx_message ubx_msg;
