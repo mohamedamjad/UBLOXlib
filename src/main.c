@@ -2,13 +2,30 @@
 #include"global.h"
 #include"gnuplot_i.h"
 
+
+/*-------------------------------------------------------------------------*/
+//                            Display help                                 //
+/*------------------------------------------------------------------------ */
+void displayHelp(){
+  printf("\nuBlox Lib Version 0.0.1\n\n");
+  
+  printf("Arguments :\n");
+  printf("-h : display this help (optional)\n");
+  printf("-i : set input file (mandatory)\n");
+  printf("-o : set output file (mandatory)\n");
+}
+
+
+/*-------------------------------------------------------------------------*/
+//                            main function                                //
+/*------------------------------------------------------------------------ */
 int main(int argc, char *argv[]){
 
 
   int opt;
   char *input_file_name, *output_file_name;
 
-  while ((opt = getopt(argc, argv, "i:o:")) != -1) {
+  while ((opt = getopt(argc, argv, "hi:o:")) != -1) {
     switch (opt) {
       case 'i':
         input_file_name = (char*)malloc(strlen(optarg));
@@ -20,22 +37,26 @@ int main(int argc, char *argv[]){
         strncpy( output_file_name, optarg, strlen(optarg));
         printf("Output file: %s\n", output_file_name);
         break;
+      case 'h':
+        displayHelp();
+        break;
       default:
-        fprintf(stderr, "Usage: %s [-i input file] [-o output file]\n",
+        fprintf(stderr, "Usage: %s -i input_file -o output_file [-h]\n",
                 argv[0]);
+        displayHelp();
         exit(EXIT_FAILURE);
     }
   }
 
-
-
   FILE *ubx_file;
+  FILE *output_file;
   int length=0;
   ubx_message ubx_msg;
   double e_square, N, x, y, z;
   int longitude, latitude, h, hAcc, vAcc;
 
-  ubx_file = fopen(argv[0], "rb");
+  ubx_file = fopen(input_file_name, "rb");
+  output_file = fopen( output_file_name, "wa");
   
   if(!ubx_file){
     printf("Probleme occured when I tried to open the UBLOX file\n");
@@ -74,5 +95,6 @@ int main(int argc, char *argv[]){
     
   }
   fclose(ubx_file);
+  fclose(output_file);
   return 0;
 }
