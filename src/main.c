@@ -1,13 +1,41 @@
+
 #include"global.h"
 #include"gnuplot_i.h"
+
 int main(int argc, char *argv[]){
+
+
+  int opt;
+  char *input_file_name, *output_file_name;
+
+  while ((opt = getopt(argc, argv, "i:o:")) != -1) {
+    switch (opt) {
+      case 'i':
+        input_file_name = (char*)malloc(strlen(optarg));
+        strncpy( input_file_name, optarg, strlen(optarg));
+        printf("Input file: %s\n", input_file_name);
+        break;
+      case 'o':
+        output_file_name = (char*) malloc(strlen(optarg));
+        strncpy( output_file_name, optarg, strlen(optarg));
+        printf("Output file: %s\n", output_file_name);
+        break;
+      default:
+        fprintf(stderr, "Usage: %s [-i input file] [-o output file]\n",
+                argv[0]);
+        exit(EXIT_FAILURE);
+    }
+  }
+
+
+
   FILE *ubx_file;
   int length=0;
   ubx_message ubx_msg;
   double e_square, N, x, y, z;
   int longitude, latitude, h, hAcc, vAcc;
 
-  ubx_file = fopen(argv[1], "rb");
+  ubx_file = fopen(argv[0], "rb");
   
   if(!ubx_file){
     printf("Probleme occured when I tried to open the UBLOX file\n");
