@@ -24,7 +24,7 @@
 /* ------------------------------------------------------------------------*/
 //                                structures                               //
 /*-------------------------------------------------------------------------*/
-// new types
+// UBX message
 typedef struct{
     unsigned char header[2];
     unsigned char message_class;
