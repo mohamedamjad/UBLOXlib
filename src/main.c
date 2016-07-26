@@ -14,10 +14,10 @@ void displayHelp(){
   printf("Arguments :\n");
   printf("-h : display this help (optional)\n");
   printf("-i : set input file (mandatory)\n");
-  printf("-m : parse a specific message (optional)");
+  printf("-m : parse a specific message (optional)\n");
   printf("-o : set output file (mandatory)\n");
   printf("-p : plot charts\n");
-  printf("-r : generate a report after parsing the ubx file(optional)");
+  printf("-r : generate a report after parsing the ubx file(optional)\n");
   printf("-v : get program version\n");
 }
 
@@ -28,9 +28,10 @@ void displayHelp(){
 int main(int argc, char *argv[]){
   int opt;
   short unsigned int generate_report = 0;
+  short unsigned int generate_charts = 0;
   char *input_file_name, *output_file_name;
 
-  while ((opt = getopt(argc, argv, "g:rvm:phi:o:")) != -1) {
+  while ((opt = getopt(argc, argv, "grvm:hi:o:")) != -1) {
     switch (opt) {
       case 'i':
         input_file_name = (char*)malloc(strlen(optarg));
@@ -55,8 +56,9 @@ int main(int argc, char *argv[]){
         printf("Generate detailed report: YES\n");
         generate_report = 1;
         break;
-      case 'p':
+      case 'g':
         printf("Plot charts: YES\n");
+        generate_charts = 1;
         break;
       default:
         fprintf(stderr, "Usage: %s -i input_file -o output_file [-h]\n",
@@ -111,7 +113,7 @@ int main(int argc, char *argv[]){
         min = ubx_msg.payload[17];
         sec = ubx_msg.payload[18];
         valid_01_21 = ubx_msg.payload[19];
-        fprintf(output_file, "%d %d %d %d %d %d %d %d %d %d\n", iToW_01_21, tAcc, nano, year, month, day, hour, min, sec, valid_01_21);
+        fprintf(output_file, "NAV_TIMEUTC %d %d %d %d %d %d %d %d %d %d\n", iToW_01_21, tAcc, nano, year, month, day, hour, min, sec, valid_01_21);
     }
     /////////////////////////////////////////////////////////////////////////
 
@@ -137,7 +139,7 @@ int main(int argc, char *argv[]){
 	//z = (N * (double)(1.0-e_square) + (double)h*1e-3)*sin(PI*(double)latitude*1e-7/180.0);
 	//printf("%de-7 %de-7 %d\n",longitude,latitude,h);
 	//printf("%f %f %f %d %d\n",x,y,z,hAcc,vAcc);
-	fprintf(output_file, "%d %d %d %d %d %d %d\n",iToW_01_02,longitude,latitude,height,hMSL,hAcc,vAcc);
+	fprintf(output_file, "NAV_POSLLH %d %d %d %d %d %d %d\n",iToW_01_02,longitude,latitude,height,hMSL,hAcc,vAcc);
 	//////////////////////////////////////////////////////////////////////////
     }
     else if (ubx_msg.message_class == 0x02 && ubx_msg.message_id == 0x10){
@@ -145,7 +147,7 @@ int main(int argc, char *argv[]){
         week_number = ((ubx_msg.payload[5]<<8)|ubx_msg.payload[4]);
         numSV = ubx_msg.payload[6];
         reserved1 = ubx_msg.payload[7];
-        fprintf(output_file, "%d %d %d %d\n", iToW_02_10, week_number, numSV, reserved1);
+        fprintf(output_file, "RXM_RAW %d %d %d %d\n", iToW_02_10, week_number, numSV, reserved1);
         for(int j = 0; j<numSV; j++){
             //cpMes = ((ubx_msg.payload[15+j*24]<<56)|(ubx_msg.payload[14+j*24]<<48)|(ubx_msg.payload[13+j*24]<<40)|(ubx_msg.payload[12+j*24]<<32)|(ubx_msg.payload[11+j*24]<<24)|(ubx_msg.payload[10+j*24]<<16)|(ubx_msg.payload[9+j*24]<<8)|ubx_msg.payload[8+j*24]);
             memcpy( &cpMes, ubx_msg.payload+8+j*24, sizeof(double));
@@ -154,14 +156,31 @@ int main(int argc, char *argv[]){
             sv = ubx_msg.payload[28+j*24];
             mesQI = ubx_msg.payload[29+j*24];
             cno = ubx_msg.payload[30+j*24];
-            lli = cno = ubx_msg.payload[31+j*24];
-            fprintf(output_file,"SV %.3f %.3f %.3f %d %d %d %d\n", cpMes, prMes, doMes, sv, mesQI, cno, lli);
+            lli = ubx_msg.payload[31+j*24];
+            fprintf(output_file," %.3f %.3f %.3f %d %d %d %d\n", cpMes, prMes, doMes, sv, mesQI, cno, lli);
         }
 
     }
   }
   if(generate_report == 1){
-    printf("PARSING REPORT:\n");
+    printf("ANALYSIS REPORT:\n");
+  }
+  if(generate_charts == 1){
+    gnuplot_ctrl * ptr_plot;
+    ptr_plot = gnuplot_init();
+    
+    gnuplot_setstyle(ptr_plot, "lines");
+    gnuplot_set_xlabel(ptr_plot, "epochs");
+    gnuplot_set_ylabel(ptr_plot, "clock accuracy estimation in ns");
+        gnuplot_cmd(ptr_plot, "plot sin(x)");
+
+    gnuplot_cmd(ptr_plot, "set term png");
+    gnuplot_cmd(ptr_plot, "set output \"out.png\"");
+    gnuplot_cmd(ptr_plot, "replot");
+    gnuplot_cmd(ptr_plot, "set term x11");
+    gnuplot_cmd(ptr_plot, "plot sin(x)");
+    
+    gnuplot_close(ptr_plot);
   }
   fclose(ubx_file);
   fclose(output_file);

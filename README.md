@@ -1,6 +1,4 @@
 # UBLOXlib
 ublox messages library
 ## Build:
-
-'make'
-
+make pour compiler
