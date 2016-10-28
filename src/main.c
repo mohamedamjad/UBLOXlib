@@ -76,7 +76,8 @@ int main(int argc, char *argv[]){
   //double e_square, N, x, y, z;
   int longitude, latitude, height, hMSL, hAcc, vAcc, iToW_01_02,
       iToW_01_21, year, month, day, hour, min, sec, valid_01_21, tAcc, nano,
-      iToW_02_10, week_number, numSV, reserved1, sv, mesQI, cno, lli;
+      iToW_02_10, week_number, numSV, reserved1, sv, mesQI, cno, lli,
+      iToW_01_20, fToW, leap_seconds, validity_flag;
   double cpMes, prMes;
   float doMes;
 
@@ -160,6 +161,16 @@ int main(int argc, char *argv[]){
             fprintf(output_file," %.3f %.3f %.3f %d %d %d %d\n", cpMes, prMes, doMes, sv, mesQI, cno, lli);
         }
 
+    }
+    /////////////////////////////////////////////////////////////////////////////
+    else if (ubx_msg.message_class == 0x01 && ubx_msg.message_id == 0x20){
+        iToW_01_20    = (signed long)((ubx_msg.payload[3]<<24)|(ubx_msg.payload[2]<<16)|(ubx_msg.payload[1]<<8)|ubx_msg.payload[0]);
+        fToW          = (signed long)((ubx_msg.payload[7]<<24)|(ubx_msg.payload[6]<<16)|(ubx_msg.payload[5]<<8)|ubx_msg.payload[4]);
+        week_number   = ((ubx_msg.payload[9]<<8)|ubx_msg.payload[8]);
+        leap_seconds  = ubx_msg.payload[10];
+        validity_flag = ubx_msg.payload[11];
+        tAcc          = (signed long)((ubx_msg.payload[15]<<24)|(ubx_msg.payload[14]<<16)|(ubx_msg.payload[13]<<8)|ubx_msg.payload[12]);
+        fprintf(output_file, "NAV_TIMEGPS %d %d %d %d %d %d", iToW_01_20, fToW, week_number, leap_seconds, validity_flag, tAcc);
     }
   }
   if(generate_report == 1){
