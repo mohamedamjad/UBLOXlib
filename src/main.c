@@ -94,7 +94,7 @@ int main(int argc, char *argv[]){
     fread(&ubx_msg.header[1],sizeof(unsigned char),1,ubx_file);
     if (ubx_msg.header[1]!=0x62) continue;
     fread(&ubx_msg.message_class,sizeof(unsigned char),4,ubx_file);
-    if( (ubx_msg.message_class != 0x01 || ubx_msg.message_id != 0x02) && (ubx_msg.message_class != 0x01 || ubx_msg.message_id != 0x21) && (ubx_msg.message_class != 0x02 || ubx_msg.message_id != 0x10) ) continue;
+    if( (ubx_msg.message_class != 0x01 || ubx_msg.message_id != 0x02) && (ubx_msg.message_class != 0x01 || ubx_msg.message_id != 0x21) && (ubx_msg.message_class != 0x02 || ubx_msg.message_id != 0x10) && (ubx_msg.message_class != 0x01 || ubx_msg.message_id != 0x20) ) continue;
     length = (ubx_msg.message_length[1]<<8)|ubx_msg.message_length[0];
     fread(&ubx_msg.payload,sizeof(unsigned char),length,ubx_file);
     fread(&ubx_msg.checksum_A,sizeof(unsigned char),1,ubx_file);
@@ -170,7 +170,7 @@ int main(int argc, char *argv[]){
         leap_seconds  = ubx_msg.payload[10];
         validity_flag = ubx_msg.payload[11];
         tAcc          = (signed long)((ubx_msg.payload[15]<<24)|(ubx_msg.payload[14]<<16)|(ubx_msg.payload[13]<<8)|ubx_msg.payload[12]);
-        fprintf(output_file, "NAV_TIMEGPS %d %d %d %d %d %d", iToW_01_20, fToW, week_number, leap_seconds, validity_flag, tAcc);
+        fprintf(output_file, "NAV_TIMEGPS %d %d %d %d %d %d\n", iToW_01_20, fToW, week_number, leap_seconds, validity_flag, tAcc);
     }
   }
   if(generate_report == 1){
