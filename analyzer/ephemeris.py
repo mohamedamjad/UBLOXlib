@@ -58,6 +58,7 @@ class Ephemeris:
 
         # constantes
         mu = 3.986005e+14
+        ome = 7.2921151467+e-5
 
         # variables
         sqrt_a = sat_nav[17] # sqrt of semi major axis
@@ -65,6 +66,18 @@ class Ephemeris:
         delta_n = sat_nav[12]  # correction of mean motion (rad/s)
         M0 = sat_nav[13]
         e = sat_nav[15]
+        omega = sat_nav[24]
+        Cus = sat_nav[16]
+        Cuc = sat_nav[14]
+        Crc = sat_nav[23]
+        Crs = sat_nav[11]
+        Cic = sat_nav[19]
+        Cis = sat_nav[21]
+        i0 = sat_nav[22]
+        IDOT = sat_nav[26]
+        OMEGA = sat_nav[20]
+        OMEGA_dot = sat_nav[25]
+
 
         # reference: 1995-SPS-signal-specification document, page 38
         a = math.pow(sqrt_a,2) # Semi-major axe
@@ -79,7 +92,36 @@ class Ephemeris:
             E = Mk + e * sin(Em)
             Em = E
         # The true anomaly
-        
+        vk = 2 * math.atan(math.sqrt((1 + e) / (1 - e)) * math.tan(E / 2))
+
+        # Eccentric anomaly
+        Ek = math.acos((e + math.cos(vk)) / (1 + e * math.cos(vk)))
+
+        # Argument of latitude
+        phik = vk + omega
+
+        # Second harmonic perturbations
+        delta_uk = Cus * math.sin(2 * phik) + Cuc * math.cos(2 * phik) # Argument of latitude correction
+        delta_rk = Crc * math.cos(2 * phik) + Crs * math.sin(2 * phik) # Radius correction
+        delta_ik = Cic * math.cos(2 * phik) + Cis * math.sin(2 * phik) # Correction to inclination
+
+        uk = phik + delta_uk # Corrected argument of latitude
+        rk = a * (1 - e * math.cos(Ek)) + delta_rk # Corrected radius
+        ik = i0 + delta_ik + IDOT * tk
+
+        # Positions in orbital plane
+        xk_diff = rk * math.cos(uk)
+        yk_diff = rk * math.sin(uk)
+
+        # Corrected longitude of ascending node
+        OMEGAk = OMEGA + (OMEGA_dot - ome) * tk - ome * toe
+
+        # ECEF
+        xk = xk_diff * math.cos(OMEGAk) - yk_diff * math.cos(ik) * math.sin(OMEGAk)
+        yk = xk_diff * math.sin(OMEGAk) + yk_diff * math.cos(ik) * math.cos(OMEGAk)
+        zk = yk_diff * math.sin(ik)
+
+        return [xk, yk, zk]
 
 
 Ephemeris("/home/anonyme/Téléchargements/brdc2940.16n")
