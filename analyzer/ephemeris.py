@@ -89,7 +89,7 @@ class Ephemeris:
         # Keppler equation resolution
         Em = Mk
         for i in range(0,30):
-            E = Mk + e * sin(Em)
+            E = Mk + e * math.sin(Em)
             Em = E
         # The true anomaly
         vk = 2 * math.atan(math.sqrt((1 + e) / (1 - e)) * math.tan(E / 2))
@@ -122,6 +122,8 @@ class Ephemeris:
         zk = yk_diff * math.sin(ik)
 
         return [xk, yk, zk]
+
+
 
 
 Ephemeris("/home/anonyme/Téléchargements/brdc2940.16n")

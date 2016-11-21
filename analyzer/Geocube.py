@@ -9,7 +9,10 @@ import math
 
 
 class Geocube:
+
+    ###########################################################################
     def __init__(self, input_file):
+        """Constructeur de la classe Geocube"""
         if os.path.isfile(input_file) != True:
             sys.exit("Fichier introuvable!\n")
 
@@ -40,8 +43,11 @@ class Geocube:
 
         self.buildCube(1000, 1000, 1000, 1, 10)
 
+        self.plot_data()
+
 
     def build_matrix(self):
+        """Construire la matrice d observation"""
         line = ''
         tmp_array = []
         sat_tmp_array = []
