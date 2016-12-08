@@ -9,9 +9,7 @@ import numpy as np
 # Constants
 LAMBDA_L1 = 0.190293672798
 
-
 class Analyzer:
-
 
     ###########################################################################
 
@@ -37,6 +35,7 @@ class Analyzer:
         print("SEUIL SNR: "+str(self.seuil_snr)+"\n")
         print("SEUIL ELEVATION SATELLITE: " + str(self.seuil_elev_sat) + "\n")
         print("OBS FILE LIST: "+ str(self.obs_data_file) +"\n")
+        self.buildDoubleDifferences()
 
 
     ###########################################################################
@@ -88,8 +87,9 @@ class Analyzer:
     def buildDoubleDifferences(self):
         """Construire les doubles differences. Pour construire les DD on va choisir un cube pivot et un satellite pivot"""
         """Le choix du satellite pivot se base sur l'élevation, le cube pivot est choisit par l'utilisateur. C'est le"""
-        for pivot_data in self.obs[0].rxm_raw.shape[0]:
-            self.add.append([0,0,0])
+        for i in range(0, self.obs[0].rxm_raw.shape[0]):
+            self.dd.append([self.obs[0].rxm_raw[i, 0], self.obs[0].rxm_raw[i, 1], 0.0])
+        print(self.dd)
 
     ###########################################################################
     def sat_rec_vector(self, x_s, y_s, z_s, x_r, y_r, z_r):
@@ -99,12 +99,5 @@ class Analyzer:
         V.append(y_s - y_r)
         V.append(z_s - z_r)
         return V
-
-    ###########################################################################
-    def getSatElev(self, t, ):
-
-
-
-
 
 Analyzer("/home/anonyme/UBLOXlib/analyzer/config.ini")
