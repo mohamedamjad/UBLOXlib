@@ -122,7 +122,3 @@ class Ephemeris:
 
         return [xk, yk, zk]
 
-
-
-
-Ephemeris("/home/anonyme/Téléchargements/brdc2940.16n")

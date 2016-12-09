@@ -2,9 +2,11 @@
 # -*- coding: utf-8 -*-
 import math
 from Geocube import Geocube
+from generic_functions import *
 from ephemeris import Ephemeris
 from ConfigParser import SafeConfigParser
 import numpy as np
+import math
 
 # Constants
 LAMBDA_L1 = 0.190293672798
@@ -35,7 +37,6 @@ class Analyzer:
         print("SEUIL SNR: "+str(self.seuil_snr)+"\n")
         print("SEUIL ELEVATION SATELLITE: " + str(self.seuil_elev_sat) + "\n")
         print("OBS FILE LIST: "+ str(self.obs_data_file) +"\n")
-        self.buildDoubleDifferences()
 
 
     ###########################################################################
@@ -84,12 +85,6 @@ class Analyzer:
         """Fonction pour calculer le RMS"""
         return (phase_double_difference - (1/LAMBDA_L1 * pseudorange_double_difference + math.floor(phase_double_difference - 1/LAMBDA_L1 * pseudorange_double_difference)))
 
-#    def buildDoubleDifferences(self):
-#        """Construire les doubles differences. Pour construire les DD on va choisir un cube pivot et un satellite pivot
-#        Le choix du satellite pivot se base sur l'élevation, le cube pivot est choisit par l'utilisateur. C'est le prem-
-#        ier cube renseigné dans la liste des cubes"""
-
-
     ###########################################################################
     def sat_rec_vector(self, x_s, y_s, z_s, x_r, y_r, z_r):
         """Calculer le vecteur recepteur -> satellite"""
@@ -99,4 +94,14 @@ class Analyzer:
         V.append(z_s - z_r)
         return V
 
-Analyzer("/home/anonyme/UBLOXlib/analyzer/config.ini")
+    ###########################################################################
+    def getSatElevation(self, x_s, y_s, z_s, x_r, y_r, z_r):
+        """Calculer l elevation d un satellite"""
+        sat_rec_geoc = self.sat_rec_vector(x_s, y_s, z_s, x_r, y_r, z_r)
+        sat_rec_loc  = geocentrique2local(sat_rec_geoc[0], sat_rec_geoc[1], sat_rec_geoc[2])
+        norm = math.sqrt( sat_rec_loc[0,0] * sat_rec_loc[0,0] + sat_rec_loc[1,0] * sat_rec_loc[1,0] + sat_rec_loc[2,0] * sat_rec_loc[2,0] )
+        elevation = math.asin(sat_rec_geoc[2] / norm )
+        return elevation
+
+a = Analyzer("/home/anonyme/UBLOXlib/analyzer/config.ini")
+a.getSatElevation(13416746.195,-22186753.441,6248864.499,4201792.2950,177945.2380,4779286.6850)
