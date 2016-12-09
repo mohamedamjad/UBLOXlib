@@ -2,10 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="fa43cf8b-9fe3-4669-913f-bbbdc3be90dc" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/analyzer/generic_functions.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/analyzer/analyzer.py" afterPath="$PROJECT_DIR$/analyzer/analyzer.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/analyzer/ephemeris.py" afterPath="$PROJECT_DIR$/analyzer/ephemeris.py" />
     </list>
     <ignored path="UBLOXlib.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -289,7 +286,14 @@
       <option name="project" value="LOCAL" />
       <updated>1481276935337</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="ajout de generic_functions">
+      <created>1481293643008</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1481293643008</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -328,7 +332,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="ajout de la fonction  buildCube" />
-    <option name="LAST_COMMIT_MESSAGE" value="ajout de la fonction  buildCube" />
+    <MESSAGE value="ajout de generic_functions" />
+    <option name="LAST_COMMIT_MESSAGE" value="ajout de generic_functions" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
