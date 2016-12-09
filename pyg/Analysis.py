@@ -6,6 +6,7 @@ import configparser
 
 
 class Analysis:
+    """Class Analysis: """
     def __init__(self):
         self.tableDD = []
         parser = argparse.ArgumentParser(description="PyG : The Python Geocube Library.")
@@ -42,8 +43,8 @@ class Analysis:
 
 ##########################################################################
     def buildDD(self):
-        # Le nombre de DD = Nbre_de_cube - 1
+        # Le nombre_de_DD = Nbre_de_cube - 1
         for i in range(1, len(self.obs_data_file)):
-            self.tableDD.append(DoubleDifference(self.obs_data_file[0], self.obs_data_file[i]))
+            self.tableDD.append(DoubleDifference(self.obs_data_file[0], self.obs_data_file[i], ephemeris_path))
 
 Analysis()

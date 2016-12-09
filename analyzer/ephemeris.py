@@ -78,7 +78,6 @@ class Ephemeris:
         OMEGA = sat_nav[20]
         OMEGA_dot = sat_nav[25]
 
-
         # reference: 1995-SPS-signal-specification document, page 38
         a = math.pow(sqrt_a,2) # Semi-major axe
         n0 = math.sqrt(mu/pow(a,3)) # mean motion (rad/sec)
