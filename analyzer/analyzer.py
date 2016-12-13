@@ -125,10 +125,14 @@ class Analyzer:
                         self.obs[0].rxm_raw[i,1], self.obs[0].rxm_raw[i,0]) - t.iso_ToGPSUnixTime(
                         year, month, day, hour, minute, sec
                         )) < 3600000:
-                    print(math.fabs(t.weekToW_ToGPSUnixTime(
-                        self.obs[0].rxm_raw[i,1], self.obs[0].rxm_raw[i,0]) - t.iso_ToGPSUnixTime(
-                        year, month, day, hour, minute, sec
-                        )))
+                    coord_sat_tmp = self.eph.getSatXYZ(int(self.obs[0].rxm_raw[i, 0] / 1000), self.eph.nav_data[j])
+                    print(coord_sat_tmp)
+                    if 40 < float(180 * self.getSatElevation(coord_sat_tmp[0], coord_sat_tmp[1], coord_sat_tmp[2],
+                                                  self.coord_pivot[0],self.coord_pivot[1],self.coord_pivot[2])/math.pi):
+
+                        print(float(180 * self.getSatElevation(coord_sat_tmp[0], coord_sat_tmp[1], coord_sat_tmp[2],
+                                                  self.coord_pivot[0],self.coord_pivot[1],self.coord_pivot[2])/math.pi))
+                        break;
 
         for i in range(1, len(self.obs)):
             # Le nombre des DD = Nbre de cubes fixes x Nbre de cube mobile

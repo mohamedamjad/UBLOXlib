@@ -57,7 +57,7 @@ class Ephemeris:
 
         # constantes
         mu = 3.986005e+14
-        ome = 7.2921151467+e-5
+        ome = 7.2921151467e-5
 
         # variables
         sqrt_a = sat_nav[17] # sqrt of semi major axis
