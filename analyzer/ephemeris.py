@@ -10,7 +10,6 @@ class Ephemeris:
     def __init__(self, file_path):
         self.nav_data = np.array([])
         self.parseRinexNav(file_path)
-        print(self.nav_data[452,0])
 
     def parseRinexNav(self, file_path):
         if os.path.isfile(file_path) != True:
@@ -121,4 +120,3 @@ class Ephemeris:
         zk = yk_diff * math.sin(ik)
 
         return [xk, yk, zk]
-

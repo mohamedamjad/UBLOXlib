@@ -43,7 +43,7 @@ class Geocube:
 
         self.buildCube(1000, 1000, 1000, 1, 10)
 
-        self.plot_data()
+        #self.plot_data()
 
 
     def build_matrix(self):
