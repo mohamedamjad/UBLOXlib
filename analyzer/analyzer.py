@@ -18,6 +18,8 @@ class Analyzer:
 
     def __init__(self, config_file_path):
         print("PyG V 0.0.1 .. ")
+        # Déclaration des variables d'analyse
+
         self.coord_pivot = [0.0, 0.0, 0.0]
         self.coord_mobile = [0.0, 0.0, 0.0]
         self.seuil_snr = 0
@@ -101,14 +103,11 @@ class Analyzer:
         return V
 
     ###########################################################################
-    """and math.fabs(t.weekToW_ToGPSUnixTime(
-                        self.obs[0].rxm_raw[i,1], self.obs[0].rxm_raw[i,0]) - t.iso_ToGPSUnixTime(
-                        year, month, day, hour, minute, sec
-                    )) < 3600"""
     def buildDoubleDifferences(self):
         """Construire les doubles differences"""
         coord_sat_tmp = [0.0, 0.0, 0.0]
         t = Timing()
+        flag = 0
         # Il faut d'abord choisir le satellite pivot
         for i in range(0, self.obs[0].rxm_raw.shape[0]):
 
@@ -124,15 +123,21 @@ class Analyzer:
                 if self.obs[0].rxm_raw[i,7] == self.eph.nav_data[j,0] and math.fabs(t.weekToW_ToGPSUnixTime(
                         self.obs[0].rxm_raw[i,1], self.obs[0].rxm_raw[i,0]) - t.iso_ToGPSUnixTime(
                         year, month, day, hour, minute, sec
-                        )) < 3600000:
+                        )) < 7200000:
                     coord_sat_tmp = self.eph.getSatXYZ(int(self.obs[0].rxm_raw[i, 0] / 1000), self.eph.nav_data[j])
                     print(coord_sat_tmp)
-                    if 40 < float(180 * self.getSatElevation(coord_sat_tmp[0], coord_sat_tmp[1], coord_sat_tmp[2],
+                    if 10 < float(180 * self.getSatElevation(coord_sat_tmp[0], coord_sat_tmp[1], coord_sat_tmp[2],
                                                   self.coord_pivot[0],self.coord_pivot[1],self.coord_pivot[2])/math.pi):
 
                         print(float(180 * self.getSatElevation(coord_sat_tmp[0], coord_sat_tmp[1], coord_sat_tmp[2],
                                                   self.coord_pivot[0],self.coord_pivot[1],self.coord_pivot[2])/math.pi))
-                        break;
+                        print(self.eph.nav_data[j,0])
+                        print(str(year)+"/"+str(month)+"/"+str(day)+"/"+str(hour)+"/"+str(minute)+"/"+str(sec))
+                        print(str(self.obs[0].rxm_raw[i,0])+"/"+str(self.obs[0].rxm_raw[i,1]))
+                        flag = 1
+                        break
+            if flag == 1:
+                break
 
         for i in range(1, len(self.obs)):
             # Le nombre des DD = Nbre de cubes fixes x Nbre de cube mobile
