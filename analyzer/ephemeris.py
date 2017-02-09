@@ -4,12 +4,16 @@ import numpy as np
 import os.path
 import sys
 import math
+import pandas as pd
+from timing import Timing
 
 class Ephemeris:
 
     def __init__(self, file_path):
         self.nav_data = np.array([])
         self.parseRinexNav(file_path)
+        #print (self.nav_data[0])
+        self.getSatXYZ_m(3, 0, 1)
 
     def parseRinexNav(self, file_path):
         if os.path.isfile(file_path) != True:
@@ -120,3 +124,17 @@ class Ephemeris:
         zk = yk_diff * math.sin(ik)
 
         return [xk, yk, zk]
+
+    def getSatXYZ_m(self, prn, t_start, t_end):
+        time = Timing()
+        df_ephemeris = pd.DataFrame(self.nav_data, columns=['prn', 'year', 'month', 'day', 'hour', 'min', 'sec',
+                                                            'sv_clock_bias', 'sv_clock_drift', 'sv_clock_drift_rate',
+                                                            'IODE', 'Crs', 'Delta_n', 'M0', 'Cuc', 'e', 'Cus', 'sqrt_A',
+                                                            'Toe', 'Cic', 'OMEGA', 'CIS', 'i0', 'Crc', 'omega',
+                                                            'OMEGA_DOT', 'IDOT', 'Codes_L2_channel', 'GPS_week',
+                                                            'L2_P_data_flag', 'SV_accuracy', 'SV_health', 'TGD',
+                                                            'IODC', 'transmission_time', 'fit_interval'])
+        df_ephemeris["UnixGPSTime"] = time.iso_ToGPSUnixTime(df_ephemeris.year, df_ephemeris.month, df_ephemeris.day)
+        subDataFrame = df_ephemeris.query('prn == @prn')
+
+Ephemeris('/home/anonyme/Téléchargements/brdc2060.16n')

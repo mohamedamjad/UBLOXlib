@@ -1,0 +1,35 @@
+import numpy as np
+import numpy.linalg as lg
+def somme(V):
+    I = np.eye(V.shape[0])
+    Mat_diag = I*V
+    return np.trace(Mat_diag)
+
+def produit(V):
+    I = np.eye(V.shape[0])
+    Mat_diag = I*V
+    return lg.det(Mat_diag)
+
+def Q1_4(n):
+    a=2*np.eye(n)
+    v=(-1)*np.ones(n-1)
+    b = np.diag(v, k=1)
+    c = np.diag(v, k=-1)
+    d=a+b+c
+    return d
+
+def normes(n):
+    M=Q1_4(n)
+    b1=lg.norm(M,1)
+    b2 = lg.norm(M, 2)
+    binf = lg.norm(M, np.inf)
+    return b1,b2,binf
+
+def val_vect(n):
+    M = Q1_4(n)
+    vect=lg.eig(M) #tuple (val propres, vect propres)
+    return vect # tuple de array (vecteur, matrice)
+
+def ray_spec(n):
+    m=max(val_vect(n)[0]) #max des valeurs propres
+    return m
