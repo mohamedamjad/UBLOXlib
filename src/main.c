@@ -117,6 +117,7 @@ int main(int argc, char *argv[]){
       iToW_01_20, fToW, leap_seconds, validity_flag;
   double cpMes, prMes;
   float doMes;
+  long file_pos;
 
   ubx_file = fopen(input_file_name, "rb");
   output_file = fopen( output_file_name, "wa");
@@ -129,16 +130,32 @@ int main(int argc, char *argv[]){
   while(fread(&ubx_msg.header[0],sizeof(unsigned char),1,ubx_file)){
     //fread(&ubx_msg.header[0],sizeof(unsigned char),1,ubx_file);
     if (ubx_msg.header[0]!=0xb5) continue;
+    file_pos = ftell(ubx_file);
     fread(&ubx_msg.header[1],sizeof(unsigned char),1,ubx_file);
-    if (ubx_msg.header[1]!=0x62) continue;
+    if (ubx_msg.header[1]!=0x62){
+        fseek(ubx_file, file_pos, SEEK_SET);
+   	continue;
+    }
+    
     fread(&ubx_msg.message_class,sizeof(unsigned char),4,ubx_file);
-    if( (ubx_msg.message_class != 0x01 || ubx_msg.message_id != 0x02) && (ubx_msg.message_class != 0x01 || ubx_msg.message_id != 0x21) && (ubx_msg.message_class != 0x02 || ubx_msg.message_id != 0x10) && (ubx_msg.message_class != 0x01 || ubx_msg.message_id != 0x20) ) continue;
+    if( (ubx_msg.message_class != 0x01 || ubx_msg.message_id != 0x02) && (ubx_msg.message_class != 0x01 || ubx_msg.message_id != 0x21) && (ubx_msg.message_class != 0x02 || ubx_msg.message_id != 0x10) && (ubx_msg.message_class != 0x01 || ubx_msg.message_id != 0x20) ){
+        fseek(ubx_file, file_pos, SEEK_SET);
+    	continue;
+    }
+
     length = (ubx_msg.message_length[1]<<8)|ubx_msg.message_length[0];
+    if(length > MAX_PAYLOAD_SIZE){
+        fseek(ubx_file, file_pos, SEEK_SET);
+        continue;
+    }
     fread(&ubx_msg.payload,sizeof(unsigned char),length,ubx_file);
     fread(&ubx_msg.checksum_A,sizeof(unsigned char),1,ubx_file);
     fread(&ubx_msg.checksum_B,sizeof(unsigned char),1,ubx_file);
 
-    if(getCompleteChecksum(ubx_msg) == 1) continue;
+    if(getCompleteChecksum(ubx_msg) == 1){
+	fseek(ubx_file, file_pos, SEEK_SET);
+	continue;
+    }
 
     /////////////////////////////////////////////////////////////////////////
     //iToW_01_21 = (signed long)

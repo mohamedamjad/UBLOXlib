@@ -21,6 +21,8 @@
 #define TIMEUTC 0x21
 #define POSLLH 0x02
 
+#define MAX_PAYLOAD_SIZE 1000
+
 /* ------------------------------------------------------------------------*/
 //                                structures                               //
 /*-------------------------------------------------------------------------*/
@@ -30,7 +32,7 @@ typedef struct{
     unsigned char message_class;
     unsigned char message_id;
     unsigned char message_length[2];
-    unsigned char payload[7000]; // taille maxi
+    unsigned char payload[MAX_PAYLOAD_SIZE]; // taille maxi
     unsigned char checksum_A;
     unsigned char checksum_B;
 }ubx_message, *pubx_message;
