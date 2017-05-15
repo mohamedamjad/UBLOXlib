@@ -4,6 +4,38 @@
 #include"global.h"
 #include"gnuplot_i.h"
 
+/*-------------------------------------------------------------------------*/
+//                        Compute checksum                                 //
+/*------------------------------------------------------------------------ */
+short int getCompleteChecksum(ubx_message ptr_ubx){
+  // Algorithme de Fletcher: voir page 86 de u-blox6 receiver description protocol
+
+  unsigned char a, b;
+  unsigned short int length = (ptr_ubx.message_length[1]<<8)|ptr_ubx.message_length[0];
+  a = 0x00;
+  b = 0x00;
+  a = b + ptr_ubx.message_class;
+  b = b + a;
+  a = a + ptr_ubx.message_id;
+  b = b + a;
+  a = a + ptr_ubx.message_length[0];
+  b = b + a;
+  a = a + ptr_ubx.message_length[1];
+  b = b + a;
+  for(int i=0; i<length; i++){
+    a = a + ptr_ubx.payload[i];
+    b = b + a;
+  }
+  if(a == ptr_ubx.checksum_A && b == ptr_ubx.checksum_B){
+    return 0;
+
+  }else{
+    return 1;
+  }
+  //checksum(ptr_ubx.id[0], ptr_ubx->checksum_A, ptr_ubx->checksum_B);
+}
+
+
 
 /*-------------------------------------------------------------------------*/
 //                            Display help                                 //
@@ -29,7 +61,7 @@ int main(int argc, char *argv[]){
   int opt;
   short unsigned int generate_report = 0;
   short unsigned int generate_charts = 0;
-  char *input_file_name, *output_file_name;
+  char *input_file_name, *output_file_name, *output_ubx_purified_file_name;
 
   while ((opt = getopt(argc, argv, "grvm:hi:o:")) != -1) {
     switch (opt) {
@@ -43,8 +75,12 @@ int main(int argc, char *argv[]){
         break;
       case 'o':
         output_file_name = (char*) malloc(strlen(optarg));
+        output_ubx_purified_file_name = (char*) malloc(strlen(optarg)+4);
         strncpy( output_file_name, optarg, strlen(optarg));
-        printf("Output file: %s\n", output_file_name);
+        strncpy( output_ubx_purified_file_name, optarg, strlen(optarg));
+        strncpy( output_ubx_purified_file_name, "ubx_", 4);
+        printf("Output plain text file: %s\n", output_file_name);
+        printf("Output purified UBX file: %s\n", output_ubx_purified_file_name);
         break;
       case 'h':
         displayHelp();
@@ -71,6 +107,7 @@ int main(int argc, char *argv[]){
 
   FILE *ubx_file;
   FILE *output_file;
+  FILE *output_ubx_purified_file;
   int length=0;
   ubx_message ubx_msg;
   //double e_square, N, x, y, z;
@@ -83,6 +120,7 @@ int main(int argc, char *argv[]){
 
   ubx_file = fopen(input_file_name, "rb");
   output_file = fopen( output_file_name, "wa");
+  output_ubx_purified_file = fopen( output_ubx_purified_file_name, "wba");
   
   if(!ubx_file){
     printf("Probleme occured when I tried to open the UBLOX file\n");
@@ -100,6 +138,8 @@ int main(int argc, char *argv[]){
     fread(&ubx_msg.checksum_A,sizeof(unsigned char),1,ubx_file);
     fread(&ubx_msg.checksum_B,sizeof(unsigned char),1,ubx_file);
 
+    if(getCompleteChecksum(ubx_msg) == 1) continue;
+
     /////////////////////////////////////////////////////////////////////////
     //iToW_01_21 = (signed long)
     if((ubx_msg.message_class == 0x01 && ubx_msg.message_id == 0x21)){
@@ -114,7 +154,13 @@ int main(int argc, char *argv[]){
         min = ubx_msg.payload[17];
         sec = ubx_msg.payload[18];
         valid_01_21 = ubx_msg.payload[19];
-        fprintf(output_file, "NAV_TIMEUTC %d %d %d %d %d %d %d %d %d %d\n", iToW_01_21, tAcc, nano, year, month, day, hour, min, sec, valid_01_21);
+        fprintf(output_file, "NAV_TIMEUTC,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n", iToW_01_21, tAcc, nano, year, month, day, hour, min, sec, valid_01_21);
+        fwrite( &ubx_msg, sizeof(unsigned char), 6, output_ubx_purified_file);
+        fwrite( ubx_msg.payload, sizeof(unsigned char), 20, output_ubx_purified_file);
+        fwrite( &(ubx_msg.checksum_A), sizeof(unsigned char), 1, output_ubx_purified_file);
+        fwrite( &(ubx_msg.checksum_B), sizeof(unsigned char), 1, output_ubx_purified_file);
+
+        
     }
     /////////////////////////////////////////////////////////////////////////
 
@@ -140,7 +186,7 @@ int main(int argc, char *argv[]){
 	//z = (N * (double)(1.0-e_square) + (double)h*1e-3)*sin(PI*(double)latitude*1e-7/180.0);
 	//printf("%de-7 %de-7 %d\n",longitude,latitude,h);
 	//printf("%f %f %f %d %d\n",x,y,z,hAcc,vAcc);
-	fprintf(output_file, "NAV_POSLLH %d %d %d %d %d %d %d\n",iToW_01_02,longitude,latitude,height,hMSL,hAcc,vAcc);
+	fprintf(output_file, "NAV_POSLLH,%d,%d,%d,%d,%d,%d,%d\n",iToW_01_02,longitude,latitude,height,hMSL,hAcc,vAcc);
 	//////////////////////////////////////////////////////////////////////////
     }
     else if (ubx_msg.message_class == 0x02 && ubx_msg.message_id == 0x10){
@@ -148,7 +194,7 @@ int main(int argc, char *argv[]){
         week_number = ((ubx_msg.payload[5]<<8)|ubx_msg.payload[4]);
         numSV = ubx_msg.payload[6];
         reserved1 = ubx_msg.payload[7];
-        fprintf(output_file, "RXM_RAW %d %d %d %d\n", iToW_02_10, week_number, numSV, reserved1);
+        //fprintf(output_file, "RXM_RAW %d %d %d %d\n", iToW_02_10, week_number, numSV, reserved1);
         for(int j = 0; j<numSV; j++){
             //cpMes = ((ubx_msg.payload[15+j*24]<<56)|(ubx_msg.payload[14+j*24]<<48)|(ubx_msg.payload[13+j*24]<<40)|(ubx_msg.payload[12+j*24]<<32)|(ubx_msg.payload[11+j*24]<<24)|(ubx_msg.payload[10+j*24]<<16)|(ubx_msg.payload[9+j*24]<<8)|ubx_msg.payload[8+j*24]);
             memcpy( &cpMes, ubx_msg.payload+8+j*24, sizeof(double));
@@ -158,8 +204,12 @@ int main(int argc, char *argv[]){
             mesQI = ubx_msg.payload[29+j*24];
             cno = ubx_msg.payload[30+j*24];
             lli = ubx_msg.payload[31+j*24];
-            fprintf(output_file," %.3f %.3f %.3f %d %d %d %d\n", cpMes, prMes, doMes, sv, mesQI, cno, lli);
+            fprintf(output_file,"RXM_RAW,%d,%d,%d,%d,%.3f,%.3f,%.3f,%d,%d,%d,%d\n", iToW_02_10, week_number, numSV, reserved1, cpMes, prMes, doMes, sv, mesQI, cno, lli);
         }
+        fwrite( &ubx_msg, sizeof(unsigned char), 6 + 8, output_ubx_purified_file);
+        fwrite (ubx_msg.payload + 8 , sizeof(unsigned char), 24*numSV, output_ubx_purified_file);
+        fwrite( &(ubx_msg.checksum_A) , sizeof(unsigned char), 2, output_ubx_purified_file);
+
 
     }
     /////////////////////////////////////////////////////////////////////////////
@@ -195,5 +245,6 @@ int main(int argc, char *argv[]){
   }
   fclose(ubx_file);
   fclose(output_file);
+  fclose(output_ubx_purified_file);
   return 0;
 }

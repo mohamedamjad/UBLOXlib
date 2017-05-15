@@ -75,7 +75,7 @@ class Sp3:
                     if line[76:79] not in '   ':
                         tmp_vector.append(1)
                     else:
-                        tmp_vector.append(0)
+                        tmp_vector.append(0) #
 
                     if line[79:80] not in ' ':
                         tmp_vector.append(1)
@@ -113,12 +113,12 @@ class Sp3:
         print (regres_1)
         xp = np.linspace(float(pts_train['UnixGpsTime'].min() - t_mean),
                          float(pts_train['UnixGpsTime'].max() - t_mean), 10000)
-"""
+
         plt.plot((pts['UnixGpsTime'] - t_mean), pts['x'], '.', xp, regres_1(xp), '-')
         plt.show()
 
         plt.plot((pts_validate['UnixGpsTime'] - t_mean), (pts_validate['x'] - regres_1(pts_validate['UnixGpsTime'] - t_mean)))
         plt.show()
-"""
+
         
 Sp3("/home/anonyme/rtklib/RTKLIB/app/rtkrcv/gcc/temp/igu18222_00.sp3")
