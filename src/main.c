@@ -114,8 +114,10 @@ int main(int argc, char *argv[]){
   int longitude, latitude, height, hMSL, hAcc, vAcc, iToW_01_02,
       iToW_01_21, year, month, day, hour, min, sec, valid_01_21, tAcc, nano,
       iToW_02_10, week_number, numSV, reserved1, sv, mesQI, cno, lli,
-      iToW_01_20, fToW, leap_seconds, validity_flag;
-  double cpMes, prMes;
+      iToW_01_20, fToW, leap_seconds, validity_flag, freqID, gnssID, locktime,
+      prStdev, cpStdev, doStdev, recStat;
+  unsigned char trkStat;
+  double cpMes, prMes, rcvTow;
   float doMes;
   long file_pos;
 
@@ -138,7 +140,7 @@ int main(int argc, char *argv[]){
     }
     
     fread(&ubx_msg.message_class,sizeof(unsigned char),4,ubx_file);
-    if( (ubx_msg.message_class != 0x01 || ubx_msg.message_id != 0x02) && (ubx_msg.message_class != 0x01 || ubx_msg.message_id != 0x21) && (ubx_msg.message_class != 0x02 || ubx_msg.message_id != 0x10) && (ubx_msg.message_class != 0x01 || ubx_msg.message_id != 0x20) ){
+    if( (ubx_msg.message_class != 0x01 || ubx_msg.message_id != 0x02) && (ubx_msg.message_class != 0x01 || ubx_msg.message_id != 0x21) && (ubx_msg.message_class != 0x02 || ubx_msg.message_id != 0x10) && (ubx_msg.message_class != 0x01 || ubx_msg.message_id != 0x20) && (ubx_msg.message_class != 0x02 || ubx_msg.message_id != 0x15)){
         fseek(ubx_file, file_pos, SEEK_SET);
     	continue;
     }
@@ -229,6 +231,37 @@ int main(int argc, char *argv[]){
 
 
     }
+
+    /////////////////////////////////////////////////////////////////////////////
+    else if (ubx_msg.message_class == 0x02 && ubx_msg.message_id == 0x15){
+        memcpy( &rcvTow, ubx_msg.payload, sizeof(double));
+        week_number = ((ubx_msg.payload[9]<<8)|ubx_msg.payload[8]);
+        leap_seconds = *((char*) ubx_msg.payload+10);
+        numSV = ubx_msg.payload[11];
+        recStat = ubx_msg.payload[12];
+        //fprintf(output_file, "RXM_RAW %d %d %d %d\n", iToW_02_10, week_number, numSV, reserved1);
+        for(int j = 0; j<numSV; j++){
+            //cpMes = ((ubx_msg.payload[15+j*24]<<56)|(ubx_msg.payload[14+j*24]<<48)|(ubx_msg.payload[13+j*24]<<40)|(ubx_msg.payload[12+j*24]<<32)|(ubx_msg.payload[11+j*24]<<24)|(ubx_msg.payload[10+j*24]<<16)|(ubx_msg.payload[9+j*24]<<8)|ubx_msg.payload[8+j*24]);
+            memcpy( &prMes, ubx_msg.payload+16+j*32, sizeof(double));
+            memcpy( &cpMes, ubx_msg.payload+24+j*32, sizeof(double));
+            memcpy(&doMes, ubx_msg.payload+32+j*32, sizeof(float));
+            gnssID = ubx_msg.payload[36+j*32];
+            sv = ubx_msg.payload[37+j*32];
+            freqID = ubx_msg.payload[39+j*32];
+            locktime = ((ubx_msg.payload[41+j*32]<<8)|ubx_msg.payload[40+j*32]);
+            cno = ubx_msg.payload[42+j*32];
+            prStdev = ubx_msg.payload[43+j*32];
+            cpStdev = ubx_msg.payload[44+j*32];
+            doStdev = ubx_msg.payload[45+j*32];
+            trkStat = ubx_msg.payload[46+j*32];
+            fprintf(output_file,"RXM_RAWX,%.9f,%d,%d,%d,%d,%.3f,%.3f,%.3f,%d,%d,%d,%d,%d,%.2f,%.3f,%.3f,%2X\n", rcvTow, week_number, leap_seconds, numSV, recStat, prMes, cpMes, doMes, gnssID, sv, freqID, locktime, cno, (1<<(prStdev & 0x0f))/100.0, 0.004*cpStdev, (1<<(doStdev & 0x0f))/500.0, trkStat);
+        }
+        fwrite( &ubx_msg, sizeof(unsigned char), 6 + 8, output_ubx_purified_file);
+        fwrite (ubx_msg.payload + 8 , sizeof(unsigned char), 32*numSV, output_ubx_purified_file);
+        fwrite( &(ubx_msg.checksum_A) , sizeof(unsigned char), 2, output_ubx_purified_file);
+
+    }
+
     /////////////////////////////////////////////////////////////////////////////
     else if (ubx_msg.message_class == 0x01 && ubx_msg.message_id == 0x20){
         iToW_01_20    = (signed long)((ubx_msg.payload[3]<<24)|(ubx_msg.payload[2]<<16)|(ubx_msg.payload[1]<<8)|ubx_msg.payload[0]);
